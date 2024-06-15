@@ -177,6 +177,12 @@ class SequencerInstruction(abc.ABC, Generic[_T]):
     ) -> SequencerInstruction[_S]:
         raise NotImplementedError
 
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        from ._to_graph import to_graph
+
+        graph = to_graph(self)
+        return graph._repr_mimebundle_(include, exclude)
+
 
 class Pattern(SequencerInstruction[_T]):
     """An instruction representing a sequence of values.

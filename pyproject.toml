@@ -27,6 +27,7 @@ pyyaml = "^6.0.1"
 typing-extensions = "^4.10.0"
 grpcio = "^1.64.0"
 grpcio-tools = "^1.64.1"
+graphviz = "^0.20.3"
 
 # SQL dependencies
 sqlalchemy = {version = "^2.0.28"}
