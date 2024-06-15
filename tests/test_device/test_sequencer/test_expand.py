@@ -1,20 +1,23 @@
 import numpy as np
 from hypothesis import given
 from hypothesis.strategies import integers
+from numpy.typing import NDArray
 
 from caqtus.device.sequencer.channel_commands.timing.broaden import _broaden_left
 from caqtus.device.sequencer.instructions import Concatenated, Pattern
 from .generate_concatenate import bool_concatenation
-from .generate_pattern import bool_pattern
+from .generate_pattern import pattern
 from .generate_repeat import bool_repeated
 
+np.typing.NDArray = np.ndarray
 
-@given(bool_pattern(), integers(min_value=0))
-def test_pattern(pattern, n):
-    expanded, excess = _broaden_left(pattern, n)
-    assert len(expanded) == len(pattern)
+
+@given(pattern(dtype=np.bool_, min_length=1), integers(min_value=0))
+def test_pattern(p, n):
+    expanded, excess = _broaden_left(p, n)
+    assert len(expanded) == len(p)
     for i in range(len(expanded)):
-        assert expanded.array[i] == any(pattern.array[i : i + n + 1])
+        assert expanded.array[i] == any(p.array[i : i + n + 1])
 
 
 def test_pattern_0():
