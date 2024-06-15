@@ -3,20 +3,20 @@ from __future__ import annotations
 import abc
 import functools
 from collections.abc import Iterable
-from typing import Optional, Mapping, Any
+from typing import Optional, Mapping, Any, Concatenate
 
 import attrs
 import cattrs
 import numpy as np
-
 from caqtus.shot_compilation import ShotContext
 from caqtus.types.parameter import add_unit, magnitude_in_unit
 from caqtus.types.units import Unit
 from caqtus.types.variable_name import DottedVariableName
 from caqtus.utils import serialization
+
 from ._structure_hook import structure_channel_output
 from .channel_output import ChannelOutput
-from ..instructions import SequencerInstruction
+from ..instructions import SequencerInstruction, Pattern, Concatenated
 
 
 class TimeIndependentMapping(ChannelOutput, abc.ABC):
@@ -190,6 +190,32 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
                 )
             )
         return output_values
+
+    @functools.singledispatchmethod
+    def _apply_calibration(
+        self, instruction: SequencerInstruction[float]
+    ) -> SequencerInstruction[float]:
+        raise NotImplementedError(
+            f"Don't know how to apply calibration to instruction of type "
+            f"{type(instruction)}"
+        )
+
+    @_apply_calibration.register
+    def _apply_calibration_pattern(self, pattern: Pattern[float]) -> Pattern[float]:
+        result = self.interpolate(pattern.array)
+        assert len(result) == len(pattern)
+        return Pattern.create_without_copy(result)
+
+    @_apply_calibration.register
+    def _apply_calibration_concatenation(
+        self, concatenation: Concatenated[float]
+    ) -> Concatenate[float]:
+        return Concatenated(
+            *(
+                self._apply_calibration(instruction)
+                for instruction in concatenation.instructions
+            )
+        )
 
 
 # Workaround for https://github.com/python-attrs/cattrs/issues/430
