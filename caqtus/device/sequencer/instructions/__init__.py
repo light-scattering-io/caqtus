@@ -1,9 +1,3 @@
-"""This module contains the implementation of :class:`SequencerInstruction` and its
-subclasses.
-These classes are used to represent sequences of values to output on several channels
-in a compact form.
-"""
-
 from ._instructions import (
     SequencerInstruction,
     Concatenated,
@@ -12,6 +6,7 @@ from ._instructions import (
     join,
     concatenate,
 )
+from ._plot import plot_instruction
 from ._ramp import ramp, Ramp
 from ._stack import stack_instructions
 from ._to_time_array import convert_to_change_arrays
@@ -29,4 +24,5 @@ __all__ = [
     "concatenate",
     "ramp",
     "Ramp",
+    "plot_instruction",
 ]

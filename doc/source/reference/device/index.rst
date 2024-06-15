@@ -5,4 +5,4 @@ Device
    :maxdepth: 1
 
    device
-   sequencer
+   sequencer/sequencer
