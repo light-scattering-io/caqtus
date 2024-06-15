@@ -45,6 +45,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "PySide6": ("https://doc.qt.io/qtforpython-6", "Pyside6/PySide6.inv"),
     "sqlalchemy": ("https://docs.sqlalchemy.org/en/20/", None),
+    "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
 }
 
 templates_path = ["_templates"]
