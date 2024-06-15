@@ -193,23 +193,23 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
 
     @functools.singledispatchmethod
     def _apply_calibration(
-        self, instruction: SequencerInstruction[float]
-    ) -> SequencerInstruction[float]:
+        self, instruction: SequencerInstruction
+    ) -> SequencerInstruction[np.floating]:
         raise NotImplementedError(
             f"Don't know how to apply calibration to instruction of type "
             f"{type(instruction)}"
         )
 
     @_apply_calibration.register
-    def _apply_calibration_pattern(self, pattern: Pattern[float]) -> Pattern[float]:
+    def _apply_calibration_pattern(self, pattern: Pattern) -> Pattern[np.floating]:
         result = self.interpolate(pattern.array)
         assert len(result) == len(pattern)
         return Pattern.create_without_copy(result)
 
     @_apply_calibration.register
     def _apply_calibration_concatenation(
-        self, concatenation: Concatenated[float]
-    ) -> Concatenate[float]:
+        self, concatenation: Concatenated
+    ) -> Concatenated[np.floating]:
         return Concatenated(
             *(
                 self._apply_calibration(instruction)

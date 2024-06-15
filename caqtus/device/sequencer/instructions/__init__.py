@@ -1,4 +1,8 @@
-"""This module contains the implementation of timed instructions."""
+"""This module contains the implementation of :class:`SequencerInstruction` and its
+subclasses.
+These classes are used to represent sequences of values to output on several channels
+in a compact form.
+"""
 
 from ._instructions import (
     SequencerInstruction,

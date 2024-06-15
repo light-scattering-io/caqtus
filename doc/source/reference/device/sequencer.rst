@@ -1,18 +1,17 @@
-Sequencer
-=========
+caqtus.device.sequencer
+=======================
 
 .. automodule:: caqtus.device.sequencer
 
 
-Instructions
-------------
+caqtus.device.sequencer.instructions
+------------------------------------
 
 .. automodule:: caqtus.device.sequencer.instructions
+   :members:
 
-.. autodata:: caqtus.device.sequencer.instructions.SequencerInstruction
+    These are the classes that represent an instruction to be output by a sequencer:
 
-.. autoclass:: caqtus.device.sequencer.instructions.Pattern
-
-.. autoclass:: caqtus.device.sequencer.instructions.Concatenated()
-
-.. autoclass:: caqtus.device.sequencer.instructions.Repeated()
+    .. inheritance-diagram:: Pattern Concatenated Repeated Ramp
+       :parts: 1
+       :top-classes: SequencerInstruction
