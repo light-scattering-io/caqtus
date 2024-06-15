@@ -1,9 +1,18 @@
+from typing import TypeVar
+
 import numpy as np
-from hypothesis.strategies import composite, integers, permutations
+from hypothesis.strategies import (
+    composite,
+    integers,
+    permutations,
+    SearchStrategy,
+    builds,
+)
+from numpy.typing import DTypeLike
 from sympy import factorint
 
-from caqtus.device.sequencer.instructions import Repeated
-from .generate_pattern import generate_pattern, pattern
+from caqtus.device.sequencer.instructions import Repeated, SequencerInstruction
+from .generate_pattern import generate_pattern
 
 
 @composite
@@ -41,12 +50,12 @@ def factorize(draw, number: int) -> tuple[int, int]:
         return min(a, b), max(a, b)
 
 
-@composite
-def bool_repeated(
-    draw,
-    repetitions=integers(min_value=2, max_value=10),
-    bool_patterns=pattern(np.bool_, min_length=1),
-) -> Repeated[bool]:
-    repetitions = draw(repetitions)
-    sub_instruction = draw(bool_patterns)
-    return Repeated(repetitions, sub_instruction)
+T = TypeVar("T", bound=DTypeLike)
+
+
+def repeated(
+    child: SearchStrategy[SequencerInstruction[T]],
+) -> SearchStrategy[Repeated[T]]:
+    return builds(
+        Repeated, repetitions=integers(min_value=2, max_value=100), instruction=child
+    )
