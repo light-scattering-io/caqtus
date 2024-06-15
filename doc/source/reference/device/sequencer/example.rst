@@ -4,18 +4,27 @@ For example, a complex instruction can be created as follow:
 
     from caqtus.device.sequencer.instructions import (
         Pattern,
-        Ramp,
+        ramp,
         plot_instruction,
     )
 
     instr = (
-        (Pattern([0]) * 2 + Pattern([1])) * 3
+        (Pattern([0]) * 2 + Pattern([1])) * 6
         + Pattern([0]) * 5
-        + Ramp(0.0, 1.5, 20)
+        + ramp(0.0, 1.5, 20)
         + Pattern([1.5]) * 15
     )
 
-This represent the following values over time:
+    instr
+
+
+
+
+.. image:: sequencer_instruction_example_files/sequencer_instruction_example_1_0.svg
+
+
+
+It represents the following sequence of values:
 
 .. code:: ipython2
 
