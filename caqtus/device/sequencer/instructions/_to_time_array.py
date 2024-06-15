@@ -3,6 +3,7 @@ import functools
 import numpy as np
 
 from ._instructions import SequencerInstruction, Pattern, Concatenated, Repeated
+from ._ramp import Ramp
 
 
 def convert_to_change_arrays(
@@ -68,3 +69,10 @@ def _(sequence: Repeated) -> tuple[np.ndarray, np.ndarray]:
     )
     time_arrays = time_array + start_times[:, np.newaxis]
     return np.concatenate(time_arrays), np.tile(value_array, sequence.repetitions)
+
+
+@_convert_to_change_arrays.register
+def _(ramp: Ramp) -> tuple[np.ndarray, np.ndarray]:
+    values = ramp.to_pattern().array
+    times = np.arange(len(values), dtype=np.int64)
+    return times, values
