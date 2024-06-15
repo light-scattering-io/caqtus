@@ -40,3 +40,5 @@ caqtus.device.sequencer.instructions
    .. autofunction:: stack_instructions
 
    .. autofunction:: plot_instruction
+
+   .. autofunction:: to_graph
