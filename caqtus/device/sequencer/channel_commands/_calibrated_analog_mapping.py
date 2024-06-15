@@ -149,7 +149,7 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
             append,
             shot_context,
         )
-        calibration = Calibration(self.input_values, self.output_values)
+        calibration = Calibration(self.measured_data_points)
         output_values = calibration.apply(input_values)
         if required_unit != self.output_units:
             output_values = output_values.apply(
@@ -162,10 +162,13 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
         return output_values
 
 
-@attrs.define
 class Calibration:
-    input_values: Sequence[float]  # Must be sorted
-    output_values: Sequence[float]  # Must have the same length as input_values
+    def __init__(self, calibration_points: Sequence[tuple[float, float]]):
+        if not calibration_points:
+            raise EmptyCalibrationError("Calibration points must not be empty.")
+        sorted_points = sorted(calibration_points, key=lambda x: x[0])
+        self.input_values = tuple(x for x, _ in sorted_points)
+        self.output_values = tuple(y for _, y in sorted_points)
 
     @functools.singledispatchmethod
     def apply(
@@ -178,7 +181,7 @@ class Calibration:
 
     @apply.register
     def _apply_calibration_pattern(self, pattern: Pattern) -> Pattern[np.floating]:
-        if not isinstance(pattern.dtype, np.floating):
+        if not issubclass(pattern.dtype.type, np.floating):
             raise TypeError(
                 f"Can't apply calibration to pattern with dtype {pattern.dtype}"
             )
@@ -231,3 +234,7 @@ def _convert_units(
     if input_unit == output_unit:
         return array
     return magnitude_in_unit(add_unit(array, input_unit), output_unit)  # type: ignore
+
+
+class EmptyCalibrationError(ValueError):
+    pass
