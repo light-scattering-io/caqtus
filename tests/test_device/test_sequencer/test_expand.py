@@ -80,13 +80,12 @@ def test_3():
     assert excess == 0
 
 
-@given(digital_instruction, integers(min_value=0))
+@given(digital_instruction(), integers(min_value=0))
 def test_4(instr, n):
     expanded, excess = _broaden_left(instr, n)
     assert len(expanded) == len(instr)
     obtained = expanded.to_pattern().array
     expected = _broaden_left(instr.to_pattern(), n)[0].to_pattern().array
-    print(expanded)
     assert np.array_equal(
         obtained, expected
     ), f"Obtained: {obtained}\nExpected: {expected}"

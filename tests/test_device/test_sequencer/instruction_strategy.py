@@ -12,18 +12,26 @@ from .ramp_strategy import ramp
 
 T = TypeVar("T", bound=DTypeLike)
 
-analog = pattern(dtype=np.float64, min_length=1, max_length=100) | ramp()
-digital = pattern(dtype=np.bool_, min_length=1, max_length=10)
-
 
 def instruction(
-    leaf_strategy: SearchStrategy[SequencerInstruction[T]],
+    leaf_strategy: SearchStrategy[SequencerInstruction[T]], max_leaves: int
 ) -> SearchStrategy[SequencerInstruction[T]]:
     return recursive(
         leaf_strategy,
         lambda s: concatenation(s) | repeated(s),
+        max_leaves=max_leaves,
     )
 
 
-digital_instruction = instruction(digital)
-analog_instruction = instruction(analog)
+def digital_instruction(
+    max_leaves: int = 100,
+) -> SearchStrategy[SequencerInstruction[np.bool_]]:
+    return instruction(pattern(dtype=np.bool_, min_length=1, max_length=10), max_leaves)
+
+
+def analog_instruction(
+    max_leaves: int = 20,
+) -> SearchStrategy[SequencerInstruction[np.floating]]:
+    return instruction(
+        pattern(dtype=np.float64, min_length=1, max_length=100) | ramp(), max_leaves
+    )
