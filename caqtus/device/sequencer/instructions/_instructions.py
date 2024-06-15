@@ -7,6 +7,7 @@ import itertools
 import math
 from collections.abc import Sequence
 from heapq import merge
+from types import NotImplementedType
 from typing import (
     NewType,
     TypeVar,
@@ -48,7 +49,7 @@ class SequencerInstruction(abc.ABC, Generic[_T]):
     step.
 
     Instructions can be concatenated in time using the `+` operator or the
-    :fun:`concatenate`.
+    :func:`concatenate`.
     An instruction can be repeated using the `*` operator with an integer.
     """
 
@@ -150,7 +151,7 @@ class SequencerInstruction(abc.ABC, Generic[_T]):
     @abc.abstractmethod
     def __or__(
         self, other: SequencerInstruction[_S]
-    ) -> SequencerInstruction[_U] | NotImplemented:
+    ) -> SequencerInstruction[_U] | NotImplementedType:
         """Merge the channels of this instruction with another instruction.
 
         other:
@@ -281,23 +282,25 @@ class Pattern(SequencerInstruction[_T]):
 
 
 class Concatenated(SequencerInstruction[_T]):
-    """Represents an immutable concatenation of instructions."""
+    """Represents an immutable concatenation of instructions.
+
+    Use the `+` operator or the function :func:`concatenate` to concatenate instructions.
+    Do not use the class constructor directly.
+
+    Attributes:
+        instructions: The instructions concatenated by this instruction.
+            This instruction is equivalent to chaining the instructions in this list
+            one after the other.
+    """
 
     __slots__ = ("_instructions", "_instruction_bounds", "_length")
     __match_args__ = ("instructions",)
 
     @property
     def instructions(self) -> tuple[SequencerInstruction[_T], ...]:
-        """The instructions concatenated by this instruction."""
-
         return self._instructions
 
     def __init__(self, *instructions: SequencerInstruction[_T]):
-        """Do not use this constructor in user code.
-        Instead, use the `+` operator or the function :fun:`concatenate`.
-        :meta private:
-        """
-
         # The following assertions define a "pure" concatenation.
         # (i.e. no empty instructions, no nested concatenations, and at least two
         # instructions).
@@ -451,6 +454,9 @@ class Concatenated(SequencerInstruction[_T]):
 class Repeated(SequencerInstruction[_T]):
     """Represents a repetition of an instruction.
 
+    Use the `*` operator with an integer to repeat an instruction.
+    Do not use the class constructor directly.
+
     Attributes:
         instruction: The instruction to repeat.
         repetitions: The number of times to repeat the instruction.
@@ -467,11 +473,6 @@ class Repeated(SequencerInstruction[_T]):
         return self._instruction
 
     def __init__(self, repetitions: int, instruction: SequencerInstruction[_T]):
-        """
-        Do not use this constructor in user code.
-        Instead, use the `*` operator.
-        """
-
         assert isinstance(repetitions, int)
         assert isinstance(instruction, (Pattern, Concatenated, Repeated))
         assert repetitions >= 2
