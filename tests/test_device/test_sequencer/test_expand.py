@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 
 from caqtus.device.sequencer.channel_commands.timing.broaden import _broaden_left
 from caqtus.device.sequencer.instructions import Concatenated, Pattern
-from .generate_concatenate import bool_concatenation
+from .generate_concatenate import concatenation
 from .generate_pattern import pattern
 from .generate_repeat import bool_repeated
 
@@ -27,7 +27,7 @@ def test_pattern_0():
     assert excess == 0
 
 
-@given(bool_concatenation(), integers(min_value=0))
+@given(concatenation(pattern(np.bool_, min_length=1)), integers(min_value=0))
 def test_concatenation(concatenated, n):
     expanded, excess = _broaden_left(concatenated, n)
     assert len(expanded) == len(concatenated)
