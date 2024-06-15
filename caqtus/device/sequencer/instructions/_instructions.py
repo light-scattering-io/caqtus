@@ -674,8 +674,12 @@ def concatenate(*instructions: SequencerInstruction[_T]) -> SequencerInstruction
         raise TypeError("All instructions must be instances of SequencerInstruction")
     dtype = instructions[0].dtype
     if not all(instruction.dtype == dtype for instruction in instructions):
-        dtypes = ", ".join(str(instruction.dtype) for instruction in instructions)
-        raise TypeError(f"All instructions must have the same dtype, got {dtypes}")
+        result_dtype = np.result_type(
+            *[instruction.dtype for instruction in instructions]
+        )
+        instructions = [
+            instruction.as_type(result_dtype) for instruction in instructions
+        ]
     return _concatenate(*instructions)
 
 
