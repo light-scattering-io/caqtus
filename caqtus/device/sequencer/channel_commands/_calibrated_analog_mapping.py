@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import functools
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import Optional, Mapping, Any
 
 import attrs
@@ -100,37 +100,6 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
     def output_values(self) -> tuple[float, ...]:
         return tuple(x[1] for x in self.measured_data_points)
 
-    def interpolate(self, input_: np.ndarray) -> np.ndarray:
-        """Interpolates the input to obtain the output.
-
-        Args:
-            input_: The input values to interpolate.
-            It is assumed to be expressed in input_units.
-
-        Returns:
-            The interpolated output values, expressed in output_units.
-            The values are linearly interpolated between the measured data points.
-            If the input is outside the range of the measured data points, the output
-            will be clipped to the range of the measured data points.
-        """
-
-        input_values = np.array(self.input_values)
-        output_values = np.array(self.output_values)
-        interp = np.interp(
-            x=input_,
-            xp=input_values,
-            fp=output_values,
-        )
-        # Warning !!!
-        # We want to make absolutely sure that the output is within the range of data
-        # points that are measured, to avoid values that could be dangerous for the
-        # hardware.
-        # To ensure this, we clip the output to the range of the measured data points.
-        min_ = np.min(output_values)
-        max_ = np.max(output_values)
-        clipped = np.clip(interp, min_, max_)
-        return clipped
-
     def inputs(self) -> tuple[ChannelOutput]:
         return (self.input_,)
 
@@ -180,7 +149,8 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
             append,
             shot_context,
         )
-        output_values = input_values.apply(self.interpolate)
+        calibration = Calibration(self.input_values, self.output_values)
+        output_values = calibration.apply(input_values)
         if required_unit != self.output_units:
             output_values = output_values.apply(
                 functools.partial(
@@ -191,8 +161,14 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
             )
         return output_values
 
+
+@attrs.define
+class Calibration:
+    input_values: Sequence[float]  # Must be sorted
+    output_values: Sequence[float]  # Must have the same length as input_values
+
     @functools.singledispatchmethod
-    def _apply_calibration(
+    def apply(
         self, instruction: SequencerInstruction
     ) -> SequencerInstruction[np.floating]:
         raise NotImplementedError(
@@ -200,30 +176,42 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
             f"{type(instruction)}"
         )
 
-    @_apply_calibration.register
+    @apply.register
     def _apply_calibration_pattern(self, pattern: Pattern) -> Pattern[np.floating]:
-        result = self.interpolate(pattern.array)
-        assert len(result) == len(pattern)
-        return Pattern.create_without_copy(result)
+        if not isinstance(pattern.dtype, np.floating):
+            raise TypeError(
+                f"Can't apply calibration to pattern with dtype {pattern.dtype}"
+            )
+        interp = np.interp(
+            x=pattern.array,
+            xp=self.input_values,
+            fp=self.output_values,
+        )
+        # Warning !!!
+        # We want to make absolutely sure that the output is within the range of data
+        # points that are measured, to avoid values that could be dangerous for the
+        # hardware.
+        # To ensure this, we clip the output to the range of the measured data points.
+        min_ = np.min(self.output_values)
+        max_ = np.max(self.output_values)
+        clipped = np.clip(interp, min_, max_)
+        return Pattern.create_without_copy(clipped)
 
-    @_apply_calibration.register
+    @apply.register
     def _apply_calibration_concatenation(
         self, concatenation: Concatenated
     ) -> Concatenated[np.floating]:
         return Concatenated(
-            *(
-                self._apply_calibration(instruction)
-                for instruction in concatenation.instructions
-            )
+            *(self.apply(instruction) for instruction in concatenation.instructions)
         )
 
-    @_apply_calibration.register
+    @apply.register
     def _apply_calibration_repetition(
         self, repetition: Repeated
     ) -> Repeated[np.floating]:
         return Repeated(
             repetition.repetitions,
-            self._apply_calibration(repetition.instruction),
+            self.apply(repetition.instruction),
         )
 
 
