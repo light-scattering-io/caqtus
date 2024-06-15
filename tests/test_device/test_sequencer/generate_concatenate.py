@@ -1,8 +1,10 @@
-import numpy as np
-from hypothesis.strategies import composite, integers
+from typing import TypeVar
 
-from caqtus.device.sequencer.instructions import Concatenated
-from .generate_pattern import generate_pattern, pattern
+from hypothesis.strategies import composite, integers, SearchStrategy, lists
+from numpy.typing import DTypeLike
+
+from caqtus.device.sequencer.instructions import Concatenated, SequencerInstruction
+from .generate_pattern import generate_pattern
 
 
 @composite
@@ -23,12 +25,14 @@ def generate_concatenate(draw, length: int, offset: int = 0) -> Concatenated:
         return left + right
 
 
-@composite
-def bool_concatenation(
-    draw,
-    number_patterns=integers(min_value=2, max_value=10),
-    bool_patterns=pattern(dtype=np.bool_, min_length=1),
-) -> Concatenated[bool]:
-    length = draw(number_patterns)
-    patterns = [draw(bool_patterns) for _ in range(length)]
-    return Concatenated(*patterns)
+T = TypeVar("T", bound=DTypeLike)
+
+
+def concatenation(
+    children: SearchStrategy[SequencerInstruction[T]],
+    min_size: int = 2,
+    max_size: int = 50,
+) -> SearchStrategy[Concatenated[T]]:
+    return lists(children, min_size=min_size, max_size=max_size).map(
+        lambda x: Concatenated(*x)
+    )
