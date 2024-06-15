@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Documentation for sequencer instructions
+- Function `plot_instruction` to plot values takes by a sequencer instruction
+- Function `to_graph` to visualize sequencer instruction
 
 ## [3.4.0] - 2024-06-14
 
