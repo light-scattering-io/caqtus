@@ -23,13 +23,19 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
+    "sphinx.ext.inheritance_diagram",
 ]
 
 autodoc_typehints = "signature"
 autodoc_preserve_defaults = True
 maximum_signature_line_length = 80
 
-autodoc_type_aliases = {"LaneFactory": "LaneFactory", "JSON": "JSON"}
+autodoc_type_aliases = {
+    "LaneFactory": "LaneFactory",
+    "JSON": "JSON",
+    "Step": "Step",
+    "AnalogValue": "AnalogValue",
+}
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),

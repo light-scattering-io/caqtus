@@ -33,7 +33,7 @@ from caqtus.types.variable_name import DottedVariableName
 from .sequence_widget_ui import Ui_SequenceWidget
 from ..icons import get_icon
 from ..parameter_tables_editor import ParameterNamespaceEditor
-from ..sequence_iteration_editors.steps_iteration_editor import StepsIterationEditor
+from ..sequence_iteration_editors import StepsIterationEditor
 from ..timelanes_editor import TimeLanesEditor
 from ..timelanes_editor.extension import CondetrolLaneExtensionProtocol
 

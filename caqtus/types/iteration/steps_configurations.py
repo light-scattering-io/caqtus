@@ -43,6 +43,15 @@ class ContainsSubSteps:
 
 @attrs.define
 class VariableDeclaration:
+    """Represents the declaration of a variable.
+
+    Attributes:
+        variable: The name of the variable.
+        value: The unevaluated to assign to the variable.
+    """
+
+    __match_args__ = ("variable", "value")
+
     variable: DottedVariableName = attrs.field(
         validator=attrs.validators.instance_of(DottedVariableName),
         on_setattr=attrs.setters.validate,
@@ -58,6 +67,15 @@ class VariableDeclaration:
 
 @attrs.define
 class LinspaceLoop(ContainsSubSteps):
+    """Represents a loop that iterates between two values with a fixed number of steps.
+
+    Attributes:
+        variable: The name of the variable that is being iterated over.
+        start: The start value of the variable.
+        stop: The stop value of the variable.
+        num: The number of steps to take between the start and stop values.
+    """
+
     __match_args__ = ("variable", "start", "stop", "num", "sub_steps")
     variable: DottedVariableName = attrs.field(
         validator=attrs.validators.instance_of(DottedVariableName),
@@ -117,6 +135,15 @@ class LinspaceLoop(ContainsSubSteps):
 
 @attrs.define
 class ArangeLoop(ContainsSubSteps):
+    """Represents a loop that iterates between two values with a fixed step size.
+
+    Attributes:
+        variable: The name of the variable that is being iterated over.
+        start: The start value of the variable.
+        stop: The stop value of the variable.
+        step: The step size between each value.
+    """
+
     __match_args__ = ("variable", "start", "stop", "step", "sub_steps")
     variable: DottedVariableName = attrs.field(
         validator=attrs.validators.instance_of(DottedVariableName),
@@ -182,6 +209,8 @@ class ArangeLoop(ContainsSubSteps):
 
 @attrs.define
 class ExecuteShot:
+    """Step that represents the execution of a shot."""
+
     pass
 
 
@@ -197,7 +226,7 @@ serialization.register_unstructure_hook(ExecuteShot, unstructure_hook)
 
 serialization.register_structure_hook(ExecuteShot, structure_hook)
 
-
+"""TypeAlias for the different types of steps."""
 Step: TypeAlias = ExecuteShot | VariableDeclaration | LinspaceLoop | ArangeLoop
 
 
@@ -215,6 +244,12 @@ def is_step(step) -> TypeGuard[Step]:
 
 @attrs.define
 class StepsConfiguration(IterationConfiguration):
+    """Define the parameter iteration of a sequence as a list of steps.
+
+    Attributes:
+        steps: The steps of the iteration.
+    """
+
     steps: list[Step] = attrs.field(
         validator=attrs.validators.deep_iterable(
             iterable_validator=attrs.validators.instance_of(list),

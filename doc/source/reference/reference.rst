@@ -6,7 +6,7 @@ Reference
 
    experiment session
    timelanes
-   Condetrol
+   condetrol/Condetrol
    device/index
    types/index
    extension/extension

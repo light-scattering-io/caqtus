@@ -20,7 +20,8 @@ caqtus.gui.condetrol.timelanes_editor
 .. autoclass:: caqtus.gui.condetrol.timelanes_editor.TimeLaneModel
     :members:
 
+caqtus.gui.condetrol.sequence_iteration_editors
+-----------------------------------------------
 
-
-
-
+.. automodule:: caqtus.gui.condetrol.sequence_iteration_editors
+    :members:
