@@ -484,7 +484,7 @@ class Repeated(SequencerInstruction[_T]):
 
     def __init__(self, repetitions: int, instruction: SequencerInstruction[_T]):
         assert isinstance(repetitions, int)
-        assert isinstance(instruction, (Pattern, Concatenated, Repeated))
+        assert isinstance(instruction, SequencerInstruction)
         assert repetitions >= 2
         assert len(instruction) >= 1
 
