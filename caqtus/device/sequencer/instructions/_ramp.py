@@ -62,7 +62,7 @@ class Ramp(SequencerInstruction[_T]):
         return f"{type(self).__name__}({self._start}, {self._stop}, {self._length})"
 
     def __str__(self):
-        return f"{self._start} -{self._length}-> {self._stop}"
+        return f"{self._start} => {self._stop} [{self._length}]"
 
     def __getitem__(self, item):
         if isinstance(item, int):
