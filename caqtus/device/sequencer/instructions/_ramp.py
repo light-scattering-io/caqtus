@@ -4,6 +4,8 @@ from typing import TypeVar, SupportsInt, Callable, SupportsFloat
 
 import numpy
 import numpy as np
+from numpy.typing import DTypeLike
+
 from ._instructions import (
     SequencerInstruction,
     _normalize_slice,
@@ -17,7 +19,7 @@ from ._instructions import (
     merge_dtypes,
 )
 
-_T = TypeVar("_T", covariant=True, bound=numpy.generic)
+_T = TypeVar("_T", covariant=True, bound=DTypeLike)
 
 
 class Ramp(SequencerInstruction[_T]):
