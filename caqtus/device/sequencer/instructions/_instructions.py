@@ -307,6 +307,10 @@ class Concatenated(SequencerInstruction[_T]):
         return self._instructions
 
     def __init__(self, *instructions: SequencerInstruction[_T]):
+        assert all(
+            isinstance(instruction, SequencerInstruction)
+            for instruction in instructions
+        )
         # The following assertions define a "pure" concatenation.
         # (i.e. no empty instructions, no nested concatenations, and at least two
         # instructions).
