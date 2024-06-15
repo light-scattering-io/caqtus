@@ -487,6 +487,7 @@ class Repeated(SequencerInstruction[_T]):
         assert isinstance(instruction, SequencerInstruction)
         assert repetitions >= 2
         assert len(instruction) >= 1
+        assert not isinstance(instruction, Repeated)
 
         self._repetitions = repetitions
         self._instruction = instruction

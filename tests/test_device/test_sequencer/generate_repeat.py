@@ -55,7 +55,15 @@ T = TypeVar("T", bound=DTypeLike)
 
 def repeated(
     child: SearchStrategy[SequencerInstruction[T]],
-) -> SearchStrategy[Repeated[T]]:
+) -> SearchStrategy[SequencerInstruction[T]]:
     return builds(
-        Repeated, repetitions=integers(min_value=2, max_value=100), instruction=child
+        to_repeat,
+        repetitions=integers(min_value=2, max_value=100),
+        instruction=child,
     )
+
+
+def to_repeat(
+    repetitions: int, instruction: SequencerInstruction
+) -> SequencerInstruction:
+    return repetitions * instruction
