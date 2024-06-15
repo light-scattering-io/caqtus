@@ -30,9 +30,9 @@ Length = NewType("Length", int)
 Width = NewType("Width", int)
 Depth = NewType("Depth", int)
 
-_S = TypeVar("_S", covariant=True, bound=numpy.generic)
-_T = TypeVar("_T", covariant=True, bound=numpy.generic)
-_U = TypeVar("_U", covariant=True, bound=numpy.generic)
+_S = TypeVar("_S", covariant=True, bound=DTypeLike)
+_T = TypeVar("_T", covariant=True, bound=DTypeLike)
+_U = TypeVar("_U", covariant=True, bound=DTypeLike)
 
 Array1D = numpy.ndarray[Any, numpy.dtype[_T]]
 
