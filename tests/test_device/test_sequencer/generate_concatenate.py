@@ -3,7 +3,11 @@ from typing import TypeVar
 from hypothesis.strategies import composite, integers, SearchStrategy, lists
 from numpy.typing import DTypeLike
 
-from caqtus.device.sequencer.instructions import Concatenated, SequencerInstruction
+from caqtus.device.sequencer.instructions import (
+    Concatenated,
+    SequencerInstruction,
+    concatenate,
+)
 from .generate_pattern import generate_pattern
 
 
@@ -32,7 +36,9 @@ def concatenation(
     children: SearchStrategy[SequencerInstruction[T]],
     min_size: int = 2,
     max_size: int = 50,
-) -> SearchStrategy[Concatenated[T]]:
+) -> SearchStrategy[SequencerInstruction[T]]:
+    # We can't guarantee that the generated instructions will be a concatenation
+    # because concatenate might normalize the instruction.
     return lists(children, min_size=min_size, max_size=max_size).map(
-        lambda x: Concatenated(*x)
+        lambda x: concatenate(*x)
     )

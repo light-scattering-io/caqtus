@@ -7,7 +7,7 @@ from caqtus.device.sequencer.channel_commands.timing.broaden import _broaden_lef
 from caqtus.device.sequencer.instructions import Concatenated, Pattern
 from .generate_concatenate import concatenation
 from .generate_pattern import pattern
-from .generate_repeat import bool_repeated
+from .generate_repeat import repeated
 
 np.typing.NDArray = np.ndarray
 
@@ -45,12 +45,12 @@ def test_0():
     assert excess == 0
 
 
-@given(bool_repeated(), integers(min_value=0))
-def test_repeated(repeated, n):
-    expanded, excess = _broaden_left(repeated, n)
-    assert len(expanded) == len(repeated)
+@given(repeated(pattern(np.bool_, min_length=1, max_length=100)), integers(min_value=0))
+def test_repeated(r, n):
+    expanded, excess = _broaden_left(r, n)
+    assert len(expanded) == len(r)
     obtained = expanded.to_pattern().array
-    expected = _broaden_left(repeated.to_pattern(), n)[0].to_pattern().array
+    expected = _broaden_left(r.to_pattern(), n)[0].to_pattern().array
     assert np.array_equal(
         obtained, expected
     ), f"Obtained: {obtained}\nExpected: {expected}"
