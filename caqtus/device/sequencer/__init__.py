@@ -3,6 +3,7 @@ Sequencers are devices that output values at regular time intervals.
 """
 
 from . import channel_commands
+from . import instructions
 from ._controller import SequencerController
 from ._proxy import SequencerProxy
 from .compilation import SequencerCompiler
@@ -38,4 +39,5 @@ __all__ = [
     "SequencerProxy",
     "SequencerController",
     "channel_commands",
+    "instructions",
 ]

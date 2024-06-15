@@ -24,6 +24,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
     "sphinx.ext.inheritance_diagram",
+    "nbsphinx",
 ]
 
 autodoc_typehints = "signature"
@@ -47,7 +48,7 @@ intersphinx_mapping = {
 }
 
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ["reference/device/sequencer/sequencer_instruction_example.ipynb"]
 
 
 # -- Options for HTML output -------------------------------------------------
