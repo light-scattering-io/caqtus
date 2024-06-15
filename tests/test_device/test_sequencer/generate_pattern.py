@@ -1,15 +1,23 @@
+from typing import TypeVar
+
 import numpy as np
+from hypothesis.extra.numpy import arrays
+from hypothesis.strategies import integers, SearchStrategy
+from numpy.typing import DTypeLike
 
 from caqtus.device.sequencer.instructions import Pattern
-from hypothesis.extra.numpy import arrays
-from hypothesis.strategies import composite, integers
 
 
 def generate_pattern(length: int, offset: int = 0) -> Pattern:
     return Pattern(np.arange(offset, offset + length))
 
 
-@composite
-def bool_pattern(draw, length=integers(min_value=1, max_value=1000)) -> Pattern[bool]:
-    a = draw(arrays(dtype=np.bool_, shape=(draw(length),)))
-    return Pattern(a)
+T = TypeVar("T", bound=DTypeLike)
+
+
+def pattern(
+    dtype: T, min_length: int = 0, max_length=1000
+) -> SearchStrategy[Pattern[T]]:
+    return arrays(
+        dtype=dtype, shape=integers(min_value=min_length, max_value=max_length)
+    ).map(Pattern)

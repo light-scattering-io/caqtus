@@ -1,7 +1,8 @@
+import numpy as np
 from hypothesis.strategies import composite, integers
-from caqtus.device.sequencer.instructions import Concatenated
 
-from .generate_pattern import generate_pattern, bool_pattern
+from caqtus.device.sequencer.instructions import Concatenated
+from .generate_pattern import generate_pattern, pattern
 
 
 @composite
@@ -26,7 +27,7 @@ def generate_concatenate(draw, length: int, offset: int = 0) -> Concatenated:
 def bool_concatenation(
     draw,
     number_patterns=integers(min_value=2, max_value=10),
-    bool_patterns=bool_pattern(),
+    bool_patterns=pattern(dtype=np.bool_, min_length=1),
 ) -> Concatenated[bool]:
     length = draw(number_patterns)
     patterns = [draw(bool_patterns) for _ in range(length)]
