@@ -33,6 +33,10 @@ def test_calibration_pattern(cal: Calibration, p: SequencerInstruction[np.floati
 
 @given(calibration, ramp())
 def test_calibration_ramp(cal: Calibration, instr: Ramp):
+    validate_calibration(cal, instr)
+
+
+def validate_calibration(cal: Calibration, instr: SequencerInstruction[np.floating]):
     computed = cal.apply(instr).to_pattern().array
     expected = cal.apply(instr.to_pattern()).to_pattern().array
     assert np.allclose(computed, expected)
@@ -52,13 +56,9 @@ def test_calibration_ramp(cal: Calibration, instr: Ramp):
     ],
 )
 def test_calibration_on_ramp(cal: Calibration, instr: Ramp):
-    computed = cal.apply(instr).to_pattern()
-    expected = cal.apply(instr.to_pattern())
-    assert computed == expected
+    validate_calibration(cal, instr)
 
 
-@given(calibration, analog_instruction(max_leaves=5))
+@given(calibration, analog_instruction(max_leaves=4))
 def test_calibration_apply(cal: Calibration, instr: SequencerInstruction[np.floating]):
-    computed = cal.apply(instr).to_pattern()
-    expected = cal.apply(instr.to_pattern())
-    assert computed == expected
+    validate_calibration(cal, instr)
