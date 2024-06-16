@@ -2,21 +2,32 @@ from __future__ import annotations
 
 import abc
 import functools
+import math
 from collections.abc import Iterable, Sequence
-from typing import Optional, Mapping, Any
+from typing import Optional, Mapping, Any, TypeVar
 
 import attrs
 import cattrs
 import numpy as np
+from numpy.typing import ArrayLike
 
 from caqtus.shot_compilation import ShotContext
 from caqtus.types.parameter import add_unit, magnitude_in_unit
 from caqtus.types.units import Unit
 from caqtus.types.variable_name import DottedVariableName
 from caqtus.utils import serialization
+from caqtus.utils.itertools import pairwise
 from ._structure_hook import structure_channel_output
 from .channel_output import ChannelOutput
-from ..instructions import SequencerInstruction, Pattern, Concatenated, Repeated
+from ..instructions import (
+    SequencerInstruction,
+    Pattern,
+    Concatenated,
+    Repeated,
+    Ramp,
+    ramp,
+    concatenate,
+)
 
 
 class TimeIndependentMapping(ChannelOutput, abc.ABC):
@@ -162,13 +173,24 @@ class CalibratedAnalogMapping(TimeIndependentMapping):
         return output_values
 
 
+T = TypeVar("T", bound=ArrayLike)
+
+
 class Calibration:
     def __init__(self, calibration_points: Sequence[tuple[float, float]]):
-        if not calibration_points:
-            raise EmptyCalibrationError("Calibration points must not be empty.")
+        if len(calibration_points) < 2:
+            raise NotEnoughCalibrationPointsError(
+                "Calibration must have at least 2 data points"
+            )
         sorted_points = sorted(calibration_points, key=lambda x: x[0])
-        self.input_values = tuple(x for x, _ in sorted_points)
-        self.output_values = tuple(y for _, y in sorted_points)
+        self.input_values = (
+            (-math.inf,) + tuple(x for x, _ in sorted_points) + (math.inf,)
+        )
+        self.output_values = (
+            (sorted_points[0][1],)
+            + tuple(y for _, y in sorted_points)
+            + (sorted_points[-1][1],)
+        )
 
     @functools.singledispatchmethod
     def apply(
@@ -185,8 +207,12 @@ class Calibration:
             raise TypeError(
                 f"Can't apply calibration to pattern with dtype {pattern.dtype}"
             )
+        result = self(pattern.array)
+        return Pattern.create_without_copy(result)
+
+    def __call__(self, value: T) -> T:
         interp = np.interp(
-            x=pattern.array,
+            x=value,
             xp=self.input_values,
             fp=self.output_values,
         )
@@ -198,7 +224,7 @@ class Calibration:
         min_ = np.min(self.output_values)
         max_ = np.max(self.output_values)
         clipped = np.clip(interp, min_, max_)
-        return Pattern.create_without_copy(clipped)
+        return clipped
 
     @apply.register
     def _apply_calibration_concatenation(
@@ -216,6 +242,34 @@ class Calibration:
             repetition.repetitions,
             self.apply(repetition.instruction),
         )
+
+    @apply.register
+    def _apply_calibration_ramp(self, r: Ramp) -> SequencerInstruction[np.floating]:
+        results = []
+        l = len(r)
+        a = r.start
+        b = r.stop
+        if a == b:
+            value = self(a)
+            return ramp(value, value, l)
+        elif a < b:
+            for (x0, y0), (x1, y1) in pairwise(
+                zip(self.input_values, self.output_values)
+            ):
+                i_min = math.ceil(max(0, l * (x0 - a) / (b - a)))
+                i_max = math.floor(min(l, l * (x1 - a) / (b - a)))
+                if i_min == l:
+                    v_min = self(b)
+                else:
+                    v_min = self(r[i_min])
+                if i_max == l:
+                    v_max = self(b)
+                else:
+                    v_max = self(r[i_max])
+                results.append(ramp(v_min, v_max, i_max - i_min))
+            return concatenate(*results)
+        else:
+            return reversed(self.apply(reversed(r)))
 
 
 # Workaround for https://github.com/python-attrs/cattrs/issues/430
@@ -236,5 +290,5 @@ def _convert_units(
     return magnitude_in_unit(add_unit(array, input_unit), output_unit)  # type: ignore
 
 
-class EmptyCalibrationError(ValueError):
+class NotEnoughCalibrationPointsError(ValueError):
     pass
