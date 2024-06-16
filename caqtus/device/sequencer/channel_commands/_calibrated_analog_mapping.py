@@ -278,12 +278,8 @@ class Calibration:
         for lower, higher in time_segments:
             lower = min(max(lower, 0), l)
             higher = min(max(higher, 0), l)
-            if b > a:
-                i_min = math.ceil(lower)
-                i_max = math.ceil(higher)
-            else:
-                i_min = math.ceil(lower)
-                i_max = math.ceil(higher)
+            i_min = math.ceil(lower)
+            i_max = math.ceil(higher)
             sections.append((i_min, i_max))
 
         sub_ramps = []
