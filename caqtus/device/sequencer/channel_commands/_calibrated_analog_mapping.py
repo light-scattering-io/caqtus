@@ -271,12 +271,15 @@ class Calibration:
         for x0, x1 in pairwise(self.input_values):
             time_segments.append(compute_bounds(x0, x1))
 
+        if b < a:
+            time_segments.reverse()
+
         sections = []
         for lower, higher in time_segments:
             lower = min(max(lower, 0), l)
             higher = min(max(higher, 0), l)
             i_min = math.ceil(lower)
-            i_max = math.floor(higher)
+            i_max = math.ceil(higher)
             sections.append((i_min, i_max))
 
         sub_ramps = []
