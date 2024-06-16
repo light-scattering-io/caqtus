@@ -293,7 +293,10 @@ class Calibration:
             else:
                 in_1 = evaluate_ramp(r, i_max - 1)
                 y_1 = self(in_1)
-                sub_ramp = ramp(y_0, y_0 + l * (y_1 - y_0) / (l - 1), i_max - i_min)
+                length = i_max - i_min
+                sub_ramp = ramp(
+                    y_0, y_0 + length * (y_1 - y_0) / (length - 1), i_max - i_min
+                )
                 sub_ramps.append(sub_ramp)
         return concatenate(*sub_ramps)
 

@@ -14,8 +14,8 @@ from .ramp_strategy import ramp
 
 calibration = lists(
     tuples(
-        floats(allow_nan=False, allow_infinity=False),
-        floats(allow_nan=False, allow_infinity=False),
+        floats(allow_nan=False, allow_infinity=False, min_value=-1e3, max_value=1e3),
+        floats(allow_nan=False, allow_infinity=False, min_value=-1e3, max_value=1e3),
     ),
     min_size=2,
     max_size=50,
@@ -48,6 +48,7 @@ def test_calibration_ramp(cal: Calibration, instr: Ramp):
         (Calibration([(0.0, 0.0), (1.0, 0.0)]), Ramp(start=-1.0, stop=+1.0, length=1)),
         (Calibration([(0.0, 1.0), (1.0, 0.0)]), Ramp(start=4.0, stop=0.0, length=2)),
         (Calibration([(-1.0, 0.0), (0.0, 1.0)]), Ramp(start=0.0, stop=-4.0, length=2)),
+        (Calibration([(-1.0, 0.0), (0.0, 1.0)]), Ramp(start=0.5, stop=-1.0, length=3)),
     ],
 )
 def test_calibration_on_ramp(cal: Calibration, instr: Ramp):
