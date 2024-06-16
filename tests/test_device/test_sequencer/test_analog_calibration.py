@@ -33,9 +33,9 @@ def test_calibration_pattern(cal: Calibration, p: SequencerInstruction[np.floati
 
 @given(calibration, ramp())
 def test_calibration_ramp(cal: Calibration, instr: Ramp):
-    computed = cal.apply(instr).to_pattern()
-    expected = cal.apply(instr.to_pattern())
-    assert computed == expected
+    computed = cal.apply(instr).to_pattern().array
+    expected = cal.apply(instr.to_pattern()).to_pattern().array
+    assert np.allclose(computed, expected)
 
 
 @pytest.mark.parametrize(
@@ -47,6 +47,7 @@ def test_calibration_ramp(cal: Calibration, instr: Ramp):
         (Calibration([(0.0, 0.0), (1.0, 0.0)]), Ramp(start=1.0, stop=-1.0, length=1)),
         (Calibration([(0.0, 0.0), (1.0, 0.0)]), Ramp(start=-1.0, stop=+1.0, length=1)),
         (Calibration([(0.0, 1.0), (1.0, 0.0)]), Ramp(start=4.0, stop=0.0, length=2)),
+        (Calibration([(-1.0, 0.0), (0.0, 1.0)]), Ramp(start=0.0, stop=-4.0, length=2)),
     ],
 )
 def test_calibration_on_ramp(cal: Calibration, instr: Ramp):

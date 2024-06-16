@@ -282,18 +282,23 @@ class Calibration:
                 i_min = math.ceil(lower)
                 i_max = math.ceil(higher)
             else:
-                i_min = math.floor(lower)
-                i_max = math.floor(higher)
+                i_min = math.ceil(lower)
+                i_max = math.ceil(higher)
             sections.append((i_min, i_max))
 
         sub_ramps = []
         for i_min, i_max in sections:
+            if i_max == i_min:
+                continue
             in_0 = evaluate_ramp(r, i_min)
-            in_1 = evaluate_ramp(r, i_max)
             y_0 = self(in_0)
-            y_1 = self(in_1)
-            sub_ramp = ramp(y_0, y_1, i_max - i_min)
-            sub_ramps.append(sub_ramp)
+            if i_max == i_min + 1:
+                sub_ramps.append(Pattern([y_0]))
+            else:
+                in_1 = evaluate_ramp(r, i_max - 1)
+                y_1 = self(in_1)
+                sub_ramp = ramp(y_0, y_0 + l * (y_1 - y_0) / (l - 1), i_max - i_min)
+                sub_ramps.append(sub_ramp)
         return concatenate(*sub_ramps)
 
 
