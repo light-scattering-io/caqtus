@@ -183,6 +183,9 @@ class Calibration:
                 "Calibration must have at least 2 data points"
             )
         sorted_points = sorted(calibration_points, key=lambda x: x[0])
+        for x0, x1 in pairwise(sorted_points):
+            if x0[0] == x1[0]:
+                raise ValueError("Calibration points must have distinct x values")
         self.input_values = (
             (-math.inf,) + tuple(x for x, _ in sorted_points) + (math.inf,)
         )
@@ -191,6 +194,12 @@ class Calibration:
             + tuple(y for _, y in sorted_points)
             + (sorted_points[-1][1],)
         )
+
+    def __repr__(self):
+        points = [
+            (x, y) for x, y in zip(self.input_values[1:-1], self.output_values[1:-1])
+        ]
+        return f"Calibration({points})"
 
     @functools.singledispatchmethod
     def apply(
@@ -245,31 +254,44 @@ class Calibration:
 
     @apply.register
     def _apply_calibration_ramp(self, r: Ramp) -> SequencerInstruction[np.floating]:
-        results = []
         l = len(r)
         a = r.start
         b = r.stop
+
         if a == b:
-            value = self(a)
-            return ramp(value, value, l)
-        elif a < b:
-            for (x0, y0), (x1, y1) in pairwise(
-                zip(self.input_values, self.output_values)
-            ):
-                i_min = math.ceil(max(0, l * (x0 - a) / (b - a)))
-                i_max = math.floor(min(l, l * (x1 - a) / (b - a)))
-                if i_min == l:
-                    v_min = self(b)
-                else:
-                    v_min = self(r[i_min])
-                if i_max == l:
-                    v_max = self(b)
-                else:
-                    v_max = self(r[i_max])
-                results.append(ramp(v_min, v_max, i_max - i_min))
-            return concatenate(*results)
-        else:
-            return reversed(self.apply(reversed(r)))
+            return Pattern([self(a)]) * l
+
+        def compute_bounds(x, y) -> tuple[float, float]:
+            if b > a:
+                return l * (x - a) / (b - a), l * (y - a) / (b - a)
+            else:
+                return l * (y - a) / (b - a), l * (x - a) / (b - a)
+
+        time_segments = []
+        for x0, x1 in pairwise(self.input_values):
+            time_segments.append(compute_bounds(x0, x1))
+
+        sections = []
+        for lower, higher in time_segments:
+            lower = min(max(lower, 0), l)
+            higher = min(max(higher, 0), l)
+            i_min = math.ceil(lower)
+            i_max = math.floor(higher)
+            sections.append((i_min, i_max))
+
+        sub_ramps = []
+        for i_min, i_max in sections:
+            in_0 = evaluate_ramp(r, i_min)
+            in_1 = evaluate_ramp(r, i_max)
+            y_0 = self(in_0)
+            y_1 = self(in_1)
+            sub_ramp = ramp(y_0, y_1, i_max - i_min)
+            sub_ramps.append(sub_ramp)
+        return concatenate(*sub_ramps)
+
+
+def evaluate_ramp(r: Ramp, t) -> float:
+    return r.start + (r.stop - r.start) * t / len(r)
 
 
 # Workaround for https://github.com/python-attrs/cattrs/issues/430
