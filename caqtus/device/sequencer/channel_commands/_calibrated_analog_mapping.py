@@ -238,8 +238,8 @@ class Calibration:
     @apply.register
     def _apply_calibration_concatenation(
         self, concatenation: Concatenated
-    ) -> Concatenated[np.floating]:
-        return Concatenated(
+    ) -> SequencerInstruction[np.floating]:
+        return concatenate(
             *(self.apply(instruction) for instruction in concatenation.instructions)
         )
 
@@ -247,10 +247,7 @@ class Calibration:
     def _apply_calibration_repetition(
         self, repetition: Repeated
     ) -> Repeated[np.floating]:
-        return Repeated(
-            repetition.repetitions,
-            self.apply(repetition.instruction),
-        )
+        return repetition.repetitions * self.apply(repetition.instruction)
 
     @apply.register
     def _apply_calibration_ramp(self, r: Ramp) -> SequencerInstruction[np.floating]:
