@@ -46,6 +46,7 @@ def test_calibration_ramp(cal: Calibration, instr: Ramp):
         (Calibration([(0.0, 0.0), (2.0, 0.0)]), Ramp(start=1.0, stop=2.0, length=1)),
         (Calibration([(0.0, 0.0), (1.0, 0.0)]), Ramp(start=1.0, stop=-1.0, length=1)),
         (Calibration([(0.0, 0.0), (1.0, 0.0)]), Ramp(start=-1.0, stop=+1.0, length=1)),
+        (Calibration([(0.0, 1.0), (1.0, 0.0)]), Ramp(start=4.0, stop=0.0, length=2)),
     ],
 )
 def test_calibration_on_ramp(cal: Calibration, instr: Ramp):
