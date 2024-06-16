@@ -131,7 +131,8 @@ class StepItem(QStandardItem):
                     ),
                     Qt.ItemDataRole.EditRole,
                 )
-                item.appendRows(children)
+                for child in children:
+                    item.appendRow(child)
                 item.setFlags(
                     flags | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsDropEnabled
                 )
@@ -149,7 +150,8 @@ class StepItem(QStandardItem):
                     ),
                     Qt.ItemDataRole.EditRole,
                 )
-                item.appendRows(children)
+                for child in children:
+                    item.appendRow(child)
                 item.setFlags(
                     flags | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsDropEnabled
                 )
@@ -217,7 +219,8 @@ class StepsModel(QStandardItemModel):
         self.clear()
         items = [StepItem.construct(step) for step in steps.steps]
         root = self.invisibleRootItem()
-        root.appendRows(items)
+        for item in items:
+            root.appendRow(item)
         self.endResetModel()
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
@@ -251,6 +254,7 @@ class StepsModel(QStandardItemModel):
         serialized = serialization.to_json(steps)
         mime_data = QMimeData()
         mime_data.setData("application/json", serialized.encode())
+        mime_data.setText(serialized)
         return mime_data
 
     def canDropMimeData(self, data, action, row: int, column: int, parent: QModelIndex):

@@ -35,7 +35,7 @@ class DeviceConfigurationsDialog(QDialog, Ui_DeviceConfigurationsDialog):
     ):
         """Initialize the dialog."""
 
-        super().__init__(parent)
+        super().__init__(parent, Qt.WindowType.Window)
         self._configs_view = DeviceConfigurationsEditor(extension, self)
         self.add_device_dialog = AddDeviceDialog(extension, self)
         self._extension = extension
@@ -93,7 +93,6 @@ class DeviceConfigurationsEditor(QWidget):
         extension: CondetrolDeviceExtensionProtocol,
         parent: Optional[QWidget] = None,
     ):
-
         super().__init__(parent)
 
         self._list_view = QListView(self)

@@ -3,7 +3,7 @@ import functools
 from collections.abc import Callable
 from typing import Optional
 
-from PySide6.QtCore import QSettings, Qt, Signal, QTimer
+from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import (
     QMainWindow,
     QDockWidget,

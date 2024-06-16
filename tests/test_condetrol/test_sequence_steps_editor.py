@@ -14,8 +14,10 @@ from caqtus.types.iteration import (
     LinspaceLoop,
     ExecuteShot,
     ArangeLoop,
+    Step,
 )
 from caqtus.types.variable_name import DottedVariableName
+from caqtus.utils import serialization
 
 
 def test_0(qtbot: QtBot, qtmodeltester: ModelTester):
@@ -157,3 +159,51 @@ def test_3(qtbot: QtBot):
             )
         ]
     )
+
+
+def test_4(qtbot: QtBot, qtmodeltester: ModelTester):
+    # Test for issue #17.
+    # Issue was fixed by replacing QStandardItem.appendRows with
+    # QStandardItem.appendRow.
+    # Seems like a bug in Qt/Pyside6?
+    steps_data = [
+        {
+            "sub_steps": [
+                {
+                    "sub_steps": [
+                        {
+                            "sub_steps": [{"execute": "shot"}],
+                            "variable": "pre_ramsey_duration",
+                            "start": "0 us",
+                            "stop": "3 us",
+                            "num": 5,
+                        }
+                    ],
+                    "variable": "probe.frequency",
+                    "start": "-17.2 MHz",
+                    "stop": "-19.2 MHz",
+                    "num": 50,
+                }
+            ],
+            "variable": "rep",
+            "start": "0",
+            "stop": "40",
+            "step": "1",
+        },
+    ]
+    steps = serialization.converters["json"].structure(steps_data, list[Step])
+    editor = StepsIterationEditor()
+    editor.set_read_only(False)
+    editor.set_iteration(StepsConfiguration(steps))
+    qtbot.addWidget(editor)
+    editor.show()
+
+    def remove():
+        model = editor.model()
+        first_loop_index = model.index(0, 0)
+        second_loop_index = model.index(0, 0, first_loop_index)
+        model.removeRow(0, second_loop_index)
+
+    remove()
+    qtbot.wait_for_window_shown(editor)
+    qtmodeltester.check(editor.model())
