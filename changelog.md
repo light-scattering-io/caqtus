@@ -148,6 +148,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Minimize and maximize buttons for device configuration dialog
+- Documentation for sequencer instructions
+- Function `plot_instruction` to plot values takes by a sequencer instruction
+- Function `to_graph` to visualize sequencer instruction
+- Sequencer instruction for ramping analog value
 
 ### Changed
 
